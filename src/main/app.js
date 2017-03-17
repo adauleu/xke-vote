@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path'
 import socketIo from 'socket.io';
 import makeStore from './core/store';
 import {slotsData} from './conf/slots.js';
@@ -10,14 +11,19 @@ const app = module.exports = express();
 let io;
 let store;
 
-app.enable('trust proxy');
 
 //be able to load the files under the conf directory
 app.use(express.static('conf'));
+app.use(express.static('client/dist'));
+
+// serve index.html for all get to anything but /api or hmr
+app.get(/^\/(?!api\/).*$/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+});
 
 app.start = (port) => {
   store = makeStore();
-  let listenPort = port || 8082;
+  let listenPort = port || 80;
   let server = app.listen(listenPort);
   console.log(`Server is now running at localhost:${port}.`);
 
@@ -61,13 +67,13 @@ app.start = (port) => {
 
 app.use(bodyParser.json());
 
-app.post('/save-slots', function (req, res) {
+app.post('api/save-slots', function (req, res) {
   console.log(req.body);
   saveSlots(req.body.slots);
   res.send('Slots has been saved');
 });
 
-app.get('/save-slots', function (req, res) {
+app.get('api/save-slots', function (req, res) {
   res.send(readSlots());
 });
 
