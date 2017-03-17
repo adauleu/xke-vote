@@ -14,8 +14,8 @@ import Session from 'components/SessionView/Session';
 export default (
   <Route path='/' component={CoreLayout}>
     <IndexRoute component={ChooseSlots} />
-    <Route path='results'component={Votings}/>
-    <Route path='session'component={Session}/>
+    <Route path='results' component={Votings}/>
+    <Route path='session' component={Session}/>
     <Route path='free' checkVote={false} component={ChooseSlots}/>
   </Route>
 );
