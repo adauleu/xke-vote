@@ -5,7 +5,15 @@ import makeStore from './core/store';
 import {slotsData} from './conf/slots.js';
 import {saveSlots, readSlots} from './core/admin.js';
 import bodyParser from 'body-parser';
+import http from 'https';
+import fs from 'fs';
 
+const sslPath = '/etc/letsencrypt/live/xke-vote-pwa.aws.xebiatechevent.info/';
+
+const options = {
+  key: fs.readFileSync(sslPath + 'privkey.pem'),
+  cert: fs.readFileSync(sslPath + 'fullchain.pem')
+};
 
 const app = module.exports = express();
 let io;
@@ -23,11 +31,11 @@ app.get(/^\/(?!api\/).*$/, (req, res) => {
 
 app.start = (port) => {
   store = makeStore();
-  let listenPort = port || 80;
-  let server = app.listen(listenPort);
+  let listenPort = 443;
+  let server = http.createServer(options, app);
   console.log(`Server is now running at localhost:${port}.`);
 
-  io = socketIo(server);
+  io = socketIo.listen(server);
   io.on('connection', (socket) => {
     console.log('new connection by ' + socket.id);
     socket.emit('updateSession', store.getState());
@@ -62,6 +70,7 @@ app.start = (port) => {
       }
     });
   });
+  server.listen(listenPort);
   return server;
 };
 

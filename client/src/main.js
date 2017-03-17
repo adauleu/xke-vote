@@ -16,7 +16,7 @@ const history = useRouterHistory(createHistory)(historyConfig);
 
 const initialState = window.__INITIAL_STATE__;
 
-export const socket = io(`${location.protocol}//${location.hostname}:8082`);
+export const socket = io(`${location.protocol}//${location.hostname}`);
 
 const store = configureStore({initialState, history, socket});
 
