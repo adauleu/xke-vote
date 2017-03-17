@@ -1,7 +1,9 @@
 node_modules
 .idea
+.DS_Store
 *.iml
 *.log
 *.log.*
 *.out
-server/build
+build
+key
