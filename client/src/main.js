@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { useRouterHistory } from 'react-router';
-import { createHistory } from 'history';
+import {useRouterHistory} from 'react-router';
+import {createHistory} from 'history';
 import routes from './routes';
 import Root from './components/containers/Root';
 import configureStore from './utils/configureStore';
@@ -16,7 +16,7 @@ const history = useRouterHistory(createHistory)(historyConfig);
 
 const initialState = window.__INITIAL_STATE__;
 
-export const socket = io(`${location.protocol}//${location.hostname}`);
+export const socket = io(`${location.protocol}//${location.host}`);
 
 const store = configureStore({initialState, history, socket});
 
@@ -27,6 +27,18 @@ socket.on('updateVotes', state =>
 socket.on('updateSession', state =>
   store.dispatch(updateSession(state))
 );
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').then(function (registration) {
+      // Registration was successful
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }).catch(function (err) {
+      // registration failed :(
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
 
 // Render the React application to the DOM
 ReactDOM.render(
