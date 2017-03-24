@@ -1,22 +1,43 @@
-import {setSlots, updateAttendees} from './slots';
-import {rooms} from '../conf/rooms';
+import { setSlots, updateAttendees } from './slots';
+import { rooms } from '../conf/rooms';
 import _ from 'lodash';
 import uuid from 'uuid';
 
-const defaultState = {session: {status: "UNKNOWN"}, slots: [], voters: []};
+const defaultState = {
+  session: {
+    status: "UNKNOWN"
+  },
+  slots: [],
+  voters: []
+};
 
 export const reducer = (state = defaultState, action) => {
   switch (action.type) {
     case 'START_SESSION':
-      return {session: {id: uuid.v4(), status: "ACTIVE"}, slots: setSlots([], action.slots[action.moment]), voters: []};
+      return {
+        session: {
+          id: uuid.v4(),
+          status: "ACTIVE"
+        },
+        slots: setSlots([], action.slots[action.moment]),
+        voters: []
+      };
       break;
     case 'TERMINATE_SESSION':
-      return {...state, slots: chooseRooms(state.slots), session: {id: state.session.id, status: "TERMINATE"}};
+      return {
+        ...state,
+        slots: chooseRooms(state.slots),
+        session: {
+          id: state.session.id,
+          status: "TERMINATE"
+        }
+      };
       break;
     case 'SUBMIT_CHOOSEN_TALKS':
-      if (!_.contains(state.voters, action.voter) || !action.checkVote) {
+      if (!_.contains(state.voters,
+          action.voter) || !action.checkVote) {
         updateAttendees(state.slots, action.choosenTalks);
-        return {...state, voters: [...state.voters, action.voter]};
+        return { ...state, voters: [...state.voters, action.voter] };
       } else {
         return state;
       }
@@ -39,7 +60,7 @@ const chooseRooms = (slots) => {
           selectedRoom = t.room;
           _.remove(roomsByPriority, (r) => r.name === selectedRoom);
         }
-        return {...t, room: selectedRoom};
+        return { ...t, room: selectedRoom };
       })
     };
   });

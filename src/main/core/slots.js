@@ -1,7 +1,10 @@
 import _ from 'lodash';
 
 export function setSlots(state, slots) {
-  return [...state, ...slots];
+  return [
+    ...state,
+    ...slots
+  ];
 }
 
 export function updateAttendees(state, choosenTalks){

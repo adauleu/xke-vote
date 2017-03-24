@@ -6,19 +6,6 @@ import AppBar from 'material-ui/AppBar/AppBar';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
-const mapStateToProps = (state) => ({
-  session: state.session
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  startSession: (moment) => {
-    dispatch(startSession(moment));
-  },
-  terminateSession: () => {
-    dispatch(terminateSession());
-  }
-});
-
 export const Session = React.createClass({
 
   propTypes: {
@@ -33,12 +20,16 @@ export const Session = React.createClass({
     let {startSession, terminateSession} = this.props;
     let sessionButton;
     if (this.props.session.status === 'ACTIVE') {
-      sessionButton = <RaisedButton primary label='Terminate Session' onClick={() => terminateSession()}/>;
+      sessionButton = (
+        <RaisedButton primary label='Terminate Session' onClick={() => terminateSession()}/>
+      );
     } else {
-      sessionButton = <div>
-        <RaisedButton primary label='Start Morning Session' style={{marginRight: '10px'}} onClick={() => startSession('am')}/>
-        <RaisedButton primary label='Start Afternoon Session' onClick={() => startSession('pm')}/>
-      </div>;
+      sessionButton = (
+        <div>
+          <RaisedButton primary label='Start Morning Session' style={{marginRight: '10px'}} onClick={() => startSession('am')}/>
+          <RaisedButton primary label='Start Afternoon Session' onClick={() => startSession('pm')}/>
+        </div>
+      );
     }
     return (
       <MuiThemeProvider muiTheme={getMuiTheme()}>
@@ -57,4 +48,14 @@ export const Session = React.createClass({
   }
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Session);
+const mapStateToProps = (state) => ({
+  session: state.session
+});
+
+export default connect(
+  mapStateToProps,
+  {
+    startSession,
+    terminateSession
+  }
+)(Session);

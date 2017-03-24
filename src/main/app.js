@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path'
 import socketIo from 'socket.io';
 import makeStore from './core/store';
-import {slotsData} from './conf/slots.js';
+import { slotsData } from './conf/slots.js';
 import {saveSlots, readSlots} from './core/admin.js';
 import bodyParser from 'body-parser';
 import http from 'https';
@@ -31,6 +31,35 @@ app.start = (port) => {
     store = makeStore();
     let listenPort = isProd ? 443 : 8080;
     let server = null;
+
+    app.use(bodyParser.json());
+
+    app.get('/api/session-start/:moment', (req, res) => {
+      const slots = JSON.parse(JSON.stringify(slotsData));
+      const moment = req.params.moment;
+
+      store.dispatch({
+        type: 'START_SESSION',
+        slots: slots,
+        moment
+      });
+
+      console.log(store.getState());
+      console.log('START_SESSION by ');
+
+      res.status(200).send(JSON.stringify(store.getState()));
+    });
+
+    app.post('/api/save-slots', function (req, res) {
+      console.log(req.body);
+      saveSlots(req.body.slots);
+      res.send('Slots has been saved');
+    });
+
+    app.get('/api/save-slots', function (req, res) {
+      res.send(readSlots());
+    });
+
     if (isProd) {
         const options = {
             key: fs.readFileSync(sslPath + 'privkey.pem'),
@@ -45,53 +74,42 @@ app.start = (port) => {
     }
     console.log(`Server is now running at localhost:${listenPort}.`);
 
-    io.on('connection', (socket) => {
-        console.log('new connection by ' + socket.id);
-        socket.emit('updateSession', store.getState());
-        socket.on('action', (action) => {
-            switch (action.type) {
-                case 'SUBMIT_CHOOSEN_TALKS':
-                    store.dispatch(action);
-                    console.log('SUBMIT_CHOOSEN_TAKS by ' + socket.id);
-                    io.emit('updateVotes', store.getState());
-                    break;
-                case 'START_SESSION':
-                    //Copie initial slots
-                    var slots = JSON.parse(JSON.stringify(slotsData));
-                    store.dispatch({
-                        type: 'START_SESSION',
-                        slots: slots,
-                        moment: action.moment
-                    });
-                    console.log(store.getState());
-                    console.log('START_SESSION by ' + socket.id);
-                    io.emit('updateSession', store.getState());
-                    break;
-                case 'TERMINATE_SESSION':
-                    store.dispatch({
-                        type: 'TERMINATE_SESSION'
-                    });
-                    console.log('TERMINATE_SESSION by ' + socket.id);
-                    io.emit('updateSession', store.getState());
-                    break;
-                default:
-                    store.dispatch(action);
-            }
-        });
-    });
+    // io.on('connection', (socket) => {
+    //     console.log('new connection by ' + socket.id);
+    //     socket.emit('updateSession', store.getState());
+    //     // socket.on('action', (action) => {
+    //     //     switch (action.type) {
+    //     //         case 'SUBMIT_CHOOSEN_TALKS':
+    //     //             store.dispatch(action);
+    //     //             console.log('SUBMIT_CHOOSEN_TAKS by ' + socket.id);
+    //     //             io.emit('updateVotes', store.getState());
+    //     //             break;
+    //     //         // case 'START_SESSION':
+    //     //         //     //Copie initial slots
+    //     //         //     var slots = Object.assign({}, slotsData);
+    //     //         //     store.dispatch({
+    //     //         //         type: 'START_SESSION',
+    //     //         //         slots: slots,
+    //     //         //         moment: action.moment
+    //     //         //     });
+    //     //         //     console.log(store.getState());
+    //     //         //     console.log('START_SESSION by ' + socket.id);
+    //     //         //     io.emit('updateSession', store.getState());
+    //     //         //     break;
+    //     //         case 'TERMINATE_SESSION':
+    //     //             store.dispatch({
+    //     //                 type: 'TERMINATE_SESSION'
+    //     //             });
+    //     //             console.log('TERMINATE_SESSION by ' + socket.id);
+    //     //             io.emit('updateSession', store.getState());
+    //     //             break;
+    //     //         default:
+    //     //             store.dispatch(action);
+    //     //     }
+    //     // });
+    // });
+
     return server;
 };
-
-app.use(bodyParser.json());
-
-app.post('api/save-slots', function (req, res) {
-    console.log(req.body);
-    saveSlots(req.body.slots);
-    res.send('Slots has been saved');
-});
-
-app.get('api/save-slots', function (req, res) {
-    res.send(readSlots());
-});
 
 export default app;

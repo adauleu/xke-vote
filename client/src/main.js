@@ -7,7 +7,7 @@ import Root from './components/containers/Root';
 import configureStore from './utils/configureStore';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import io from 'socket.io-client';
-import {updateVotes, updateSession} from './actions/slotsActions';
+import {updateVotes} from './actions/slotsActions';
 
 injectTapEventPlugin();
 
@@ -24,9 +24,9 @@ socket.on('updateVotes', state =>
   store.dispatch(updateVotes(state))
 );
 
-socket.on('updateSession', state =>
-  store.dispatch(updateSession(state))
-);
+// socket.on('updateSession', state =>
+//   store.dispatch(updateSession(state))
+// );
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
