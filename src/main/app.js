@@ -50,6 +50,10 @@ app.start = (port) => {
       res.status(200).send(JSON.stringify(store.getState()));
     });
 
+    app.get('/api/store', (req, res) => {
+      res.status(200).send(store.getState());
+    });
+
     app.post('/api/save-slots', function (req, res) {
       console.log(req.body);
       saveSlots(req.body.slots);

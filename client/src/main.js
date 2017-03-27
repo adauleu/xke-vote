@@ -8,6 +8,7 @@ import configureStore from './utils/configureStore';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import io from 'socket.io-client';
 import {updateVotes} from './actions/slotsActions';
+import '!file-loader?name=[name].[ext]!./manifest.json'
 
 injectTapEventPlugin();
 

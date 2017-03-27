@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { selectTalk } from '../../actions/slotsActions';
+import { selectTalk, getServerStore } from '../../actions/slotsActions';
 import { submitChoosenTalks, refreshSlot } from '../../actions/slotsActions';
 import Slots from './Slots';
 import FlatButton from 'material-ui/FlatButton/FlatButton';
@@ -28,6 +28,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   goToResults: () => {
     dispatch(push('/results'));
+  },
+  getServerStore: () => {
+    dispatch(getServerStore());
   }
 });
 
@@ -39,9 +42,15 @@ export const ChooseSlots = React.createClass({
     }).isRequired).isRequired,
     selectTalk: PropTypes.func.isRequired,
     submitChoosenTalks: PropTypes.func.isRequired,
+    getServerStore: PropTypes.func.isRequired,
     goToResults: PropTypes.func.isRequired,
     voters: PropTypes.array.isRequired,
     route: PropTypes.object.isRequired
+  },
+  componentDidMount: function () {
+    const { getServerStore } = this.props;
+
+    getServerStore();
   },
   render: function () {
     let { submitChoosenTalks, goToResults, ...slots } = this.props;

@@ -26,6 +26,19 @@ export const updateSession = makeActionCreator(UPDATE_SESSION, 'updateSession');
 //   };
 // };
 
+export const getServerStore = () => {
+  return dispatch => fetch('/api/store')
+    .then(response => {
+      if (response.status >= 400) {
+        throw new Error('Bad response from server');
+      }
+      return response.json();
+    })
+    .then(data => {
+      return dispatch(updateSession(data));
+    });
+};
+
 export const startSession = (moment) => {
   return dispatch => fetch(`/api/session-start/${moment}`)
     .then(response => {
@@ -35,8 +48,6 @@ export const startSession = (moment) => {
       return response.json();
     })
     .then(data => {
-      // TODO
-      console.log(data);
       return dispatch(updateSession(data));
     });
 };
