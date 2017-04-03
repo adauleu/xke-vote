@@ -7,6 +7,7 @@ import Paper from 'material-ui/Paper/Paper';
 import {updateVotes} from '../../actions/slotsActions';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import { getServerStore } from '../../actions/slotsActions';
 
 const mapStateToProps = (state) => ({
   slots: state.slots,
@@ -16,7 +17,10 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   updateVotes: (state) => {
     dispatch(updateVotes(state));
-  }
+  },
+    getServerStore: (state) => {
+    dispatch(getServerStore(state))
+    }
 });
 
 const paperStyle = {
@@ -30,8 +34,14 @@ export const Votings = React.createClass({
       period: PropTypes.string.isRequired,
       talks: PropTypes.array.isRequired
     }).isRequired).isRequired,
+    getServerStore: PropTypes.func.isRequired,
     max: PropTypes.number.isRequired
   },
+    componentDidMount: function () {
+        const { getServerStore } = this.props;
+
+        getServerStore();
+    },
 
   render: function () {
     let { slots, max } = this.props;
