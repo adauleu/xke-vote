@@ -2,23 +2,32 @@ import _ from 'lodash';
 
 export const slots = (state = [], action) => {
   switch (action.type) {
+
     case 'SELECT_TALK':
     case 'REFRESH_SLOT':
       return state.map(s =>
         slot(s, action)
       );
+
     case 'UPDATE_SESSION':
-      return action.updateSession.slots.map(s => {
+      console.log('toto', action);
+      return action.updateSession.slots.map(slot => {
         return {
-          ...s, talks: s.talks.map(t => {
-            return {...t, selected: false};
+          ...slot,
+          talks: slot.talks.map(talk => {
+            return {
+              ...talk,
+              selected: false
+            };
           })
         };
       });
+
     case 'UPDATE_VOTES':
       return state.map(s => {
         return slot(s, action);
       });
+
     default:
       return state;
   }
