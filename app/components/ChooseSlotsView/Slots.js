@@ -4,7 +4,7 @@ import Slot from './Slot';
 export const Slots = ({ slots, selectTalk, refreshSlot }) => (
   <div>
     {slots.map(slot =>
-      <div className='col-md-4'>
+      <div className='col-md-4' key={slot.period}>
         <Slot
           key={slot.period}
           {...slot}

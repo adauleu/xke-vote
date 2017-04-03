@@ -43,7 +43,7 @@ export const Votings = React.createClass({
           </div>
           <div className='row'>
             {slots.map(slot =>
-              <div className='col-lg-6'>
+              <div className='col-lg-6' key={slot.id}>
                 <Paper style={paperStyle} zDepth={2}>
                   <div className='row'>
                     <h5 style={{marginLeft: '30'}}>{slot.period}</h5>

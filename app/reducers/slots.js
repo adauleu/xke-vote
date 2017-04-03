@@ -19,7 +19,7 @@ export const slots = (state = [], action) => {
               ...talk,
               selected: false
             };
-          })
+          }),
         };
       });
 
@@ -43,13 +43,13 @@ const slot = (state, action) => {
       return {
         ...state, talks: state.talks.map(t =>
           talk(t, action)
-        )
+        ),
       };
     case 'UPDATE_VOTES':
       return {
         ...state, talks: state.talks.map(t =>
           talk(t, action)
-        )
+        ),
       };
     default:
       return state;

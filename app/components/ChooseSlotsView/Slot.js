@@ -33,7 +33,7 @@ const talkStyle = (talk) => {
   };
 };
 
-export const Slot = ({ period, talks, onClick, refreshSlot }) => (
+export const Slot = ({ period, talks, onClick, refreshSlot, key }) => (
   <div>
     <Paper style={paperStyle} zDepth={2}>
       <List key={period}>
@@ -42,8 +42,7 @@ export const Slot = ({ period, talks, onClick, refreshSlot }) => (
         </Subheader>
         {talks.map(talk =>
           <div key={talk.id}>
-            <ListItem key={talk.id}
-                      onTouchTap={() => onClick(period, talk.id)}
+            <ListItem onTouchTap={() => onClick(period, talk.id)}
                       onClick={() => onClick(period, talk.id)}
                       style={talkStyle(talk)}
                       id='talk'
@@ -69,6 +68,7 @@ export const Slot = ({ period, talks, onClick, refreshSlot }) => (
 Slot.propTypes = {
   onClick: PropTypes.func.isRequired,
   period: PropTypes.string.isRequired,
+  key: PropTypes.string.isRequired,
   talks: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.number.isRequired,
     fondation: PropTypes.string.isRequired,

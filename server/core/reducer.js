@@ -31,10 +31,12 @@ const reducer = (state = defaultState, action) => {
         },
       });
     case 'SUBMIT_CHOOSEN_TALKS':
-      if (!_.contains(state.voters,
+      if (!_.find(state.voters,
           action.voter) || !action.checkVote) {
-        updateAttendees(state.slots, action.choosenTalks);
-        return Object.assign({}, state, { voters: state.voters.concat([action.voter]) });
+        console.log('########', action.choosenTalks);
+        const updatedState = updateAttendees(state, action.choosenTalks);
+        const assign = Object.assign({}, updatedState, {voters: state.voters.concat([action.voter])});
+        return assign;
       }
       return state;
     default:

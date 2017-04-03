@@ -7,7 +7,7 @@ import FlatButton from 'material-ui/FlatButton/FlatButton';
 import AppBar from 'material-ui/AppBar/AppBar';
 import _ from 'lodash';
 import getClientId from '../../utils/clientId';
-import { push } from 'react-router-redux';
+import { browserHistory } from 'react-router';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
@@ -27,7 +27,7 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(submitChoosenTalks(slots, checkVote));
   },
   goToResults: () => {
-    dispatch(push('/results'));
+    browserHistory.push('/results');
   },
   getServerStore: () => {
     dispatch(getServerStore());
