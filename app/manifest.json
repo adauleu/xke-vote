@@ -1,5 +1,6 @@
 {
-  "name": "React Boilerplate",
+  "name": "XKE Vote application",
+  "short_name": "xke-vote",
   "icons": [
     {
       "src": "favicon.png",

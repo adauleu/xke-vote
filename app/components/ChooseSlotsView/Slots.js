@@ -3,14 +3,13 @@ import Slot from './Slot';
 
 export const Slots = ({ slots, selectTalk, refreshSlot }) => (
   <div>
-    {slots.map(slot =>
-      <div className='col-md-4' key={slot.period}>
+    {slots.map((slot) =>
+      <div className="col-md-4" key={slot.period}>
         <Slot
-          key={slot.period}
           {...slot}
           onClick={selectTalk}
           refreshSlot={refreshSlot}
-          id='slots'
+          id="slots"
         />
       </div>
     )}
@@ -20,9 +19,10 @@ export const Slots = ({ slots, selectTalk, refreshSlot }) => (
 Slots.propTypes = {
   slots: PropTypes.arrayOf(PropTypes.shape({
     period: PropTypes.string.isRequired,
-    talks: PropTypes.array.isRequired
+    talks: PropTypes.array.isRequired,
   }).isRequired).isRequired,
-  selectTalk: PropTypes.func.isRequired
+  selectTalk: PropTypes.func.isRequired,
+  refreshSlot: PropTypes.func.isRequired,
 };
 
 export default Slots;
