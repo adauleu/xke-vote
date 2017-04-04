@@ -10,7 +10,6 @@ export const slots = (state = [], action) => {
       );
 
     case 'UPDATE_SESSION':
-      console.log('toto', action);
       return action.updateSession.slots.map(slot => {
         return {
           ...slot,

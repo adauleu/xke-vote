@@ -11,6 +11,7 @@ const logger = require('../../server/logger');
 const cheerio = require('cheerio');
 const pkg = require(path.resolve(process.cwd(), 'package.json'));
 const dllPlugin = pkg.dllPlugin;
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 
 const plugins = [
   new webpack.HotModuleReplacementPlugin(), // Tell webpack we want hot reloading
@@ -22,6 +23,9 @@ const plugins = [
   new CircularDependencyPlugin({
     exclude: /a\.js|node_modules/, // exclude node_modules
     failOnError: false, // show a warning when there is a circular dependency
+  }),
+  new ServiceWorkerWebpackPlugin({
+    entry: path.join(process.cwd(), 'app/sw.js'),
   }),
 ];
 
