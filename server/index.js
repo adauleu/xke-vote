@@ -41,16 +41,6 @@ app.get('/api/session-start/:moment', (req, res) => {
     res.status(200).send(JSON.stringify(store.getState()));
 });
 
-app.post('/api/save-slots', (req, res) => {
-    console.log(req.body);
-    saveSlots(req.body.slots);
-    res.send('Slots has been saved');
-});
-
-app.get('/api/save-slots', (req, res) => {
-    res.send(readSlots());
-});
-
 app.get('/api/store', (req, res) => {
     res.status(200).send(store.getState());
 });

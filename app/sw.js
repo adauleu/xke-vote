@@ -1,5 +1,5 @@
 const SLOW_TIME = 3000;
-const CACHE = `xke-vote::${Date.now()}`;
+const CACHE = `xke-vote::1`;
 
 console.log('Files to cache :', global.serviceWorkerOption.assets);
 const {
@@ -8,17 +8,17 @@ const {
 
 // install static assets
 function installStaticFiles() {
-  return caches.open(CACHE)
+    return caches.open(CACHE)
         .then((cache) =>
             // cache files
-             cache.addAll(assets));
+            cache.addAll(assets));
 }
 
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installed service worker');
+    console.log('[SW] Installed service worker');
 
     // cache core files
-  event.waitUntil(
+    event.waitUntil(
         installStaticFiles()
             .then(() => self.skipWaiting())
     );
@@ -26,39 +26,77 @@ self.addEventListener('install', (event) => {
 
 // clear old caches
 function clearOldCaches() {
-  return caches.keys()
+    return caches.keys()
         .then((keylist) => Promise.all(
-                keylist
-                    .filter((key) => key !== CACHE)
-                    .map((key) => caches.delete(key))
-            ));
+            keylist
+                .filter((key) => key !== CACHE)
+                .map((key) => caches.delete(key))
+        ));
 }
 
 // After the install event.
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activate event');
+    console.log('[SW] Activate event');
 
     // delete old caches
-  event.waitUntil(
+    event.waitUntil(
         clearOldCaches()
             .then(() => self.clients.claim())
     );
 });
 
+self.addEventListener('update', (event) => {
+    console.log('[SW] Update event');
+});
+
+// application fetch network data
 self.addEventListener('fetch', (event) => {
-  const url = event.request.url;
+    // abandon non-GET requests
 
-  if (url.indexOf('blocking') === -1) {
-    return;
-  }
+    const url = event.request.url;
 
-  const promise = Promise.race([
-    new Promise((resolve, reject) => setTimeout(
-      () => reject(new Response('Request killed!')),
-      SLOW_TIME
-    )),
-    fetch(event.request),
-  ]);
+    if (url.includes('/api/store') || url.includes('session-start')) {
+        event.respondWith(
+            caches.open(CACHE)
+                .then((cache) => cache.match(event.request)
+                    .then((response) => {
+                        // make network request
+                        return fetch(event.request)
+                            .then((newreq) => {
+                                console.log(`network fetch: ${url}`);
+                                if (newreq.ok) cache.put(event.request, newreq.clone());
+                                return newreq;
+                            }).catch(() => {
+                                return response;
+                            });
+                    }))
+        );
+    } else {
+        event.respondWith(
+            caches.open(CACHE)
+                .then((cache) => cache.match(event.request)
+                    .then((response) => {
+                        if (response) {
+                            // return cached file
+                            console.log(`cache fetch: ${url}`);
+                            return response;
+                        }
 
-  event.respondWith(promise);
+                        // make network request
+                        return fetch(event.request)
+                            .then((newreq) => {
+                                console.log(`network fetch: ${url}`);
+                                if (newreq.ok) cache.put(event.request, newreq.clone());
+                                return newreq;
+                            }).catch(() => {
+                                // User is landing on our page.
+                                if (event.request.mode === 'navigate') {
+                                    return global.caches.match('./');
+                                }
+
+                                return null;
+                            });
+                    }))
+        );
+    }
 });
