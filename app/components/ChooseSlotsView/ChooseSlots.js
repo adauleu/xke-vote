@@ -1,12 +1,13 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
-import FlatButton from 'material-ui/FlatButton/FlatButton';
 import AppBar from 'material-ui/AppBar/AppBar';
 import _ from 'lodash';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
-import DoneAll from 'material-ui/svg-icons/action/done-all';
+import DoneAll from 'material-ui/svg-icons/content/send';
+import Notification from 'material-ui/svg-icons/social/notifications';
+import Toggle from 'material-ui/Toggle';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import Slots from './Slots';
 import getClientId from '../../utils/clientId';
@@ -31,7 +32,7 @@ const mapDispatchToProps = (dispatch) => ({
     browserHistory.push('/results');
   },
   getServerStore: () => {
-    dispatch(getServerStore());
+    return dispatch(getServerStore());
   },
 });
 
@@ -50,25 +51,28 @@ export const ChooseSlots = React.createClass({
   },
   componentDidMount() {
     const { getServerStore } = this.props;
+    getServerStore()
+      .then(() => {
+        const checkAlreadyVote = this.props.route.checkVote !== undefined ? this.props.route.checkVote : true;
+        const alreadyVote = _(this.props.voters).find((voter) => voter === getClientId()) !== undefined;
+        if ((checkAlreadyVote && alreadyVote)) {
+          const { goToResults } = this.props;
+          goToResults();
+        }
+      });
+  },
+  onToggle() {
 
-    getServerStore();
   },
   render() {
-    let { submitChoosenTalks, goToResults, ...slots } = this.props;
-    const alreadyVote = _(this.props.voters).find((voter) => voter === getClientId()) !== undefined;
+    const { submitChoosenTalks, goToResults, ...slots } = this.props;
     const checkAlreadyVote = this.props.route.checkVote !== undefined ? this.props.route.checkVote : true;
-    let choiceComponent;
-    if ((!checkAlreadyVote || !alreadyVote)) {
-      choiceComponent = (<FlatButton
-        label="Submit Choices"
-        onTouchTap={() => {
-          console.log('onTouch');
-          submitChoosenTalks(choosenSlots(this.props.slots), checkAlreadyVote);
-        }}
-      />);
-    } else {
-      goToResults();
-    }
+    const AppRightButtons = (
+      <div style={{ display: 'inline-flex' }}>
+        <Notification style={{ color: '#fff', height: '36px', width: '36px' }} />
+        <Toggle style={{ marginTop: '8px' }} onToggle={() => this.onToggle()} />
+      </div>
+    );
     return (
       <MuiThemeProvider muiTheme={getMuiTheme()}>
         <div className="container-fluid">
@@ -76,16 +80,25 @@ export const ChooseSlots = React.createClass({
             <AppBar
               title="XKE Agenda"
               showMenuIconButton={false}
-              iconElementRight={choiceComponent}
+              iconElementRight={AppRightButtons}
+              iconStyleRight={{ marginTop: '12px' }}
               style={{ position: 'fixed', backgroundColor: '#6B205F' }}
             />
           </div>
           <div className="row" style={{ paddingTop: 60 }}>
             <Slots {...slots} style />
           </div>
-          {/* <div style={{ textAlign: 'right' }}>*/}
-          {/* {choiceComponent}*/}
-          {/* </div>*/}
+          <FloatingActionButton
+            style={{ position: 'fixed', bottom: '2rem', right: '2rem' }}
+            label="Submit Choices"
+            onTouchTap={() => {
+              console.log('onTouch');
+              submitChoosenTalks(choosenSlots(slots), checkAlreadyVote);
+              goToResults();
+            }}
+          >
+            <DoneAll />
+          </FloatingActionButton>
         </div>
       </MuiThemeProvider>
     );
