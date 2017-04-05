@@ -89,11 +89,11 @@ export const ChooseSlots = React.createClass({
             <Slots {...slots} style />
           </div>
           <FloatingActionButton
-            style={{ position: 'fixed', bottom: '2rem', right: '2rem' }}
+            style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: '10' }}
             label="Submit Choices"
             onTouchTap={() => {
               console.log('onTouch');
-              submitChoosenTalks(choosenSlots(slots), checkAlreadyVote);
+              submitChoosenTalks(choosenSlots(this.props.slots), checkAlreadyVote);
               goToResults();
             }}
           >
