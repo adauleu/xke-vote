@@ -1,5 +1,5 @@
 const { setSlots, updateAttendees } = require('./slots');
-const { rooms } = require('../conf/rooms');
+const ROOMS = require('../conf/rooms');
 const _ = require('lodash');
 const uuid = require('uuid');
 
@@ -23,8 +23,9 @@ const reducer = (state = defaultState, action) => {
         voters: [],
       };
     case 'TERMINATE_SESSION':
+      const updatedSlots = chooseRooms(state.slots)
       return Object.assign({}, state, {
-        slots: chooseRooms(state.slots),
+        slots: updatedSlots,
         session: {
           id: state.session.id,
           status: 'TERMINATE',
@@ -35,8 +36,7 @@ const reducer = (state = defaultState, action) => {
           action.voter) || !action.checkVote) {
         console.log('########', action.choosenTalks);
         const updatedState = updateAttendees(state, action.choosenTalks);
-        const assign = Object.assign({}, updatedState, {voters: state.voters.concat([action.voter])});
-        return assign;
+        return Object.assign({},updatedState, {voters: state.voters.concat([action.voter])});
       }
       return state;
     default:
@@ -45,8 +45,11 @@ const reducer = (state = defaultState, action) => {
 };
 
 const chooseRooms = (slots) => slots.map((s) => {
-  const roomsByPriority = _.sortBy(rooms, 'priority').reverse();
-  const talks = _(s.talks).sortBy('id').sortBy('attendees').value().reverse();
+  const roomsByPriority = _.sortBy(ROOMS, ['priority']).reverse();
+  const talks = _(s.talks).sortBy(['id']).sortBy(['attendees']).value().reverse();
+
+  console.log('choose room', roomsByPriority, talks)
+
   return Object.assign({}, s, {
     talks: talks.map((t) => {
       let selectedRoom;

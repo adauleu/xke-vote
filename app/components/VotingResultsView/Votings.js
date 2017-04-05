@@ -51,11 +51,11 @@ export const Votings = React.createClass({
             <AppBar title="Resultats des votes" showMenuIconButton={false} style={{ backgroundColor: '#6B205F' }} />
           </div>
           <div className="row">
-            {slots.map((slot) =>
+            { slots.map(slot => (
               <div className="col-lg-6" key={slot.id}>
                 <Paper style={paperStyle} zDepth={2}>
                   <div className="row">
-                    <h5 style={{ marginLeft: '30' }}>{slot.period}</h5>
+                    <h5 style={{ marginLeft: '30px' }}>{slot.period}</h5>
                   </div>
                   <div className="row">
                     {slot.talks.map((talk) =>
@@ -71,7 +71,7 @@ export const Votings = React.createClass({
                   </div>
                 </Paper>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </MuiThemeProvider>

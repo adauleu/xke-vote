@@ -9,8 +9,8 @@ const style = {
   margin: 10
 };
 
-export const TalkProgressBar = ({ text, attendees, fondation, room, max, key }) => (
-  <div className='container-fluid' key={key}>
+export const TalkProgressBar = ({ text, attendees, fondation, room, max }) => (
+  <div className='container-fluid'>
     <div className='row ' style={style}>
       <div className='col-md-1'>
         <Avatar
