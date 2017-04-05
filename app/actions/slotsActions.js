@@ -26,49 +26,37 @@ export const updateSession = makeActionCreator(UPDATE_SESSION, 'updateSession');
 //   };
 // };
 
-export const getServerStore = () => {
-  return dispatch => fetch('/api/store')
-    .then(response => {
-      if (response.status >= 400) {
-        throw new Error('Bad response from server');
-      }
-      return response.json();
+export const getServerStore = () => (dispatch) => fetch('/api/store')
+    .then((response) => {
+        if (response.status >= 400) {
+            throw new Error('Bad response from server');
+        }
+        return response.json();
     })
-    .then(data => {
-      return dispatch(updateSession(data));
-    });
-};
+    .then((data) => dispatch(updateSession(data)));
 
-export const startSession = (moment) => {
-  return dispatch => fetch(`/api/session-start/${moment}`)
-    .then(response => {
-      if (response.status >= 400) {
-        throw new Error('Bad response from server');
-      }
-      return response.json();
+export const startSession = (moment) => (dispatch) => fetch(`/api/session-start/${moment}`)
+    .then((response) => {
+        if (response.status >= 400) {
+            throw new Error('Bad response from server');
+        }
+        return response.json();
     })
-    .then(data => {
-      return dispatch(updateSession(data));
-    });
-};
+    .then((data) => dispatch(updateSession(data)));
 
-export const terminateSession = () => {
-  return {
+export const terminateSession = () => ({
     type: TERMINATE_SESSION,
     meta: {
-      remote: true,
+        remote: true,
     },
-  };
-};
+});
 
-export const submitChoosenTalks = (choosenTalks, checkVote) => {
-  return {
+export const submitChoosenTalks = (choosenTalks, checkVote) => ({
     type: SUBMIT_CHOOSEN_TALKS,
     choosenTalks,
     checkVote,
     voter: getClientId(),
     meta: {
-      remote: true,
+        remote: true,
     },
-  };
-};
+});

@@ -5,10 +5,10 @@ import { Router, browserHistory } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import io from 'socket.io-client';
+import runtime from 'serviceworker-webpack-plugin/lib/runtime';
 import routes from './routes';
 import configureStore from './utils/configureStore';
 import { updateVotes } from './actions/slotsActions';
-import runtime from 'serviceworker-webpack-plugin/lib/runtime';
 
 injectTapEventPlugin();
 
@@ -36,7 +36,6 @@ if ('serviceWorker' in navigator) {
     // registration failed :(
     console.log('ServiceWorker registration failed: ', err);
   });
-  
 }
 
 // Render the React application to the DOM

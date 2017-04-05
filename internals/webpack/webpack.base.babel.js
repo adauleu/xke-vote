@@ -4,6 +4,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
 
 module.exports = (options) => ({
   entry: options.entry,
@@ -76,6 +77,9 @@ module.exports = (options) => ({
       __BASENAME__: process.env.BASENAME || '',
     }),
     new webpack.NamedModulesPlugin(),
+    new ServiceWorkerWebpackPlugin({
+      entry: path.join(process.cwd(), 'app/sw.js'),
+    }),
   ]),
   resolve: {
     modules: ['app', 'node_modules'],
