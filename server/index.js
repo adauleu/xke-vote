@@ -14,10 +14,16 @@ const ngrok = (isDev && process.env.ENABLE_TUNNEL) || argv.tunnel ? require('ngr
 const resolve = require('path').resolve;
 const app = express();
 const slotsData = require('./conf/slots');
-const {readSlots, saveSlots} = require('./core/admin');
+const { readSlots, saveSlots } = require('./core/admin');
 const makeStore = require('./core/store');
 
 express.static.mime.default_type = 'text/javascript';
+
+const webpush = require('web-push');
+webpush.setGCMAPIKey(process.env.VOTE_FCM_KEY || '');
+webpush.setVapidDetails('mailto:pgdejardin@xebia.fr', process.env.VOTE_PUBLIC_KEY || '', process.env.VOTE_PRIVATE_KEY);
+
+let subscriptions = {};
 
 const store = makeStore();
 
@@ -26,29 +32,29 @@ const store = makeStore();
 app.use(bodyParser.json());
 
 app.get('/api/session-start/:moment', (req, res) => {
-    const slots = JSON.parse(JSON.stringify(slotsData));
-    const moment = req.params.moment;
+  const slots = JSON.parse(JSON.stringify(slotsData));
+  const moment = req.params.moment;
 
-    store.dispatch({
-        type: 'START_SESSION',
-        slots,
-        moment,
-    });
+  store.dispatch({
+    type: 'START_SESSION',
+    slots,
+    moment,
+  });
 
-    console.log(store.getState());
-    console.log('START_SESSION by ');
+  console.log(store.getState());
+  console.log('START_SESSION by ');
 
-    res.status(200).send(JSON.stringify(store.getState()));
+  res.status(200).send(JSON.stringify(store.getState()));
 });
 
 app.get('/api/store', (req, res) => {
-    res.status(200).send(store.getState());
+  res.status(200).send(store.getState());
 });
 
 // In production we need to pass these values in instead of relying on webpack
 setup(app, {
-    outputPath: resolve(process.cwd(), 'build'),
-    publicPath: '/',
+  outputPath: resolve(process.cwd(), 'build'),
+  publicPath: '/',
 });
 
 // get the intended host and port number, use localhost and port 3000 if not provided
@@ -63,67 +69,80 @@ let io;
 
 // Start your app.
 if (isDev) {
-    const server = app.listen(port, host, (err) => {
-        if (err) {
-            return logger.error(err.message);
+  const server = app.listen(port, host, (err) => {
+    if (err) {
+      return logger.error(err.message);
+    }
+
+    // Connect to ngrok in dev mode
+    if (ngrok) {
+      ngrok.connect(port, (innerErr, url) => {
+        if (innerErr) {
+          return logger.error(innerErr);
         }
 
-        // Connect to ngrok in dev mode
-        if (ngrok) {
-            ngrok.connect(port, (innerErr, url) => {
-                if (innerErr) {
-                    return logger.error(innerErr);
-                }
-
-                logger.appStarted(port, prettyHost, url);
-            });
-        } else {
-            logger.appStarted(port, prettyHost);
-        }
-    });
-    io = socketIo(server);
+        logger.appStarted(port, prettyHost, url);
+      });
+    } else {
+      logger.appStarted(port, prettyHost);
+    }
+  });
+  io = socketIo(server);
 } else {
-    const sslPath = '/etc/letsencrypt/live/xke-vote-pwa.aws.xebiatechevent.info/';
-    const opt = {
-        key: fs.readFileSync(`${sslPath}privkey.pem`),
-        cert: fs.readFileSync(`${sslPath}fullchain.pem`),
-    };
-    const server = https.createServer(opt, app);
-    io = socketIo.listen(server);
-    server.listen(httpsPort);
+  const sslPath = '/etc/letsencrypt/live/xke-vote-pwa.aws.xebiatechevent.info/';
+  const opt = {
+    key: fs.readFileSync(`${sslPath}privkey.pem`),
+    cert: fs.readFileSync(`${sslPath}fullchain.pem`),
+  };
+  const server = https.createServer(opt, app);
+  io = socketIo.listen(server);
+  server.listen(httpsPort);
 }
 
 io.on('connection', (socket) => {
-    console.log('new connection by ' + socket.id);
-    socket.emit('updateSession', store.getState());
-    socket.on('action', (action) => {
-        switch (action.type) {
-            case 'SUBMIT_CHOOSEN_TALKS':
-                store.dispatch(action);
-                console.log('SUBMIT_CHOOSEN_TAKS by ' + socket.id);
-                io.emit('updateVotes', store.getState());
-                break;
-            // case 'START_SESSION':
-            //     //Copie initial slots
-            //     var slots = Object.assign({}, slotsData);
-            //     store.dispatch({
-            //         type: 'START_SESSION',
-            //         slots: slots,
-            //         moment: action.moment
-            //     });
-            //     console.log(store.getState());
-            //     console.log('START_SESSION by ' + socket.id);
-            //     io.emit('updateSession', store.getState());
-            //     break;
-            case 'TERMINATE_SESSION':
-                store.dispatch({
-                    type: 'TERMINATE_SESSION'
-                });
-                console.log('TERMINATE_SESSION by ' + socket.id);
-                io.emit('updateSession', store.getState());
-                break;
-            default:
-                store.dispatch(action);
+  console.log('new connection by ' + socket.id);
+  socket.emit('updateSession', store.getState());
+  socket.on('action', (action) => {
+    switch (action.type) {
+      case 'SUBMIT_CHOOSEN_TALKS':
+        store.dispatch(action);
+        // console.log('SUBMIT_CHOOSEN_TAKS by ' + socket.id);
+        if (subscriptions[action.voter]) {
+          console.log('SEND NOTIFICATION');
+          webpush.sendNotification(subscriptions[action.voter], 'Merci d\'avoir voté')
         }
-    });
+        io.emit('updateVotes', store.getState());
+        break;
+      // case 'START_SESSION':
+      //     //Copie initial slots
+      //     var slots = Object.assign({}, slotsData);
+      //     store.dispatch({
+      //         type: 'START_SESSION',
+      //         slots: slots,
+      //         moment: action.moment
+      //     });
+      //     console.log(store.getState());
+      //     console.log('START_SESSION by ' + socket.id);
+      //     io.emit('updateSession', store.getState());
+      //     break;
+      case 'TERMINATE_SESSION':
+        store.dispatch({
+          type: 'TERMINATE_SESSION'
+        });
+        console.log('TERMINATE_SESSION by ' + socket.id);
+        io.emit('updateSession', store.getState());
+        break;
+
+      case 'SUBMIT_NOTIFICATION_SUBSCRIPTION': {
+        const { subscription, id } = action;
+        console.log('SUBSCRIPTION:', subscription);
+        console.log('ID:', id);
+        subscriptions[id] = subscription;
+        break;
+      }
+
+      default:
+        store.dispatch(action);
+    }
+  });
 });

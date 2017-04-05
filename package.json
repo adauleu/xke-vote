@@ -87,7 +87,8 @@
       "browser": true,
       "node": true,
       "jest": true,
-      "es6": true
+      "es6": true,
+      "serviceworker": true
     },
     "plugins": [
       "react",
@@ -239,6 +240,7 @@
     "socket.io-client": "1.7.3",
     "uuid": "3.0.1",
     "warning": "3.0.0",
+    "web-push": "^3.2.2",
     "whatwg-fetch": "2.0.1"
   },
   "devDependencies": {

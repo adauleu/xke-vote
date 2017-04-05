@@ -11,7 +11,25 @@ import Toggle from 'material-ui/Toggle';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import Slots from './Slots';
 import getClientId from '../../utils/clientId';
-import { selectTalk, getServerStore, submitChoosenTalks, refreshSlot } from '../../actions/slotsActions';
+import {
+  selectTalk, getServerStore, submitChoosenTalks, refreshSlot, updateServerNotificationSubscription,
+} from '../../actions/slotsActions';
+const logger = console;
+
+export function urlB64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4); // eslint-disable-line no-mixed-operators
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) { // eslint-disable-line no-plusplus
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 const mapStateToProps = (state) => ({
   slots: state.slots,
@@ -33,6 +51,9 @@ const mapDispatchToProps = (dispatch) => ({
   },
   getServerStore: () => {
     return dispatch(getServerStore());
+  },
+  updateServerNotificationSubscription(subscription) {
+    dispatch(updateServerNotificationSubscription(subscription));
   },
 });
 
@@ -60,17 +81,79 @@ export const ChooseSlots = React.createClass({
           goToResults();
         }
       });
-  },
-  onToggle() {
+    navigator.serviceWorker.ready.then(swRegistration => {
+      this.setState({ swRegistration });
+      swRegistration.pushManager.getSubscription()
+        .then(subscription => {
+          logger.log('subscription:', subscription);
+          const notifications = !(subscription === null);
+          this.setState({ notifications });
 
+          if (notifications) {
+            logger.log('User IS subscribed.');
+          } else {
+            logger.log('User is NOT subscribed.');
+          }
+
+          if (Notification.permission === 'denied') {
+            this.props.updateServerNotificationSubscription(null);
+            logger.log('updateServerNotificationSubscription(null)')
+          } else {
+            this.props.updateServerNotificationSubscription(subscription);
+            logger.log('updateServerNotificationSubscription(subscription)')
+          }
+        });
+    });
+  },
+  onToggle(event) {
+    event.preventDefault();
+    const value = event.target.value === 'on';
+    this.setState({ notifications: value });
+    if (value) {
+      this.subscribeUser();
+    } else {
+      this.unsubscribeUser();
+    }
+  },
+  subscribeUser() {
+    const applicationServerKey = urlB64ToUint8Array(process.env.VOTE_PUBLIC_KEY);
+    navigator.serviceWorker.ready.then(swRegistration => {
+      swRegistration.pushManager
+        .subscribe({
+          userVisibleOnly: true,
+          applicationServerKey,
+        })
+        .then(subscription => {
+          logger.log('User is subscribed.');
+          this.props.updateServerNotificationSubscription(subscription);
+          this.setState({ notifications: true });
+        })
+        .catch(err => {
+          logger.log('Failed to subscribe the user: ', err);
+          this.setState({ notifications: false });
+        });
+    });
+  },
+  unsubscribeUser() {
+    this.state.swRegistration.pushManager.getSubscription()
+      .then(subscription => subscription ? subscription.unsubscribe() : undefined)
+      .catch(error => {
+        logger.log('Error unsubscribing', error);
+      })
+      .then(() => {
+        this.props.updateServerNotificationSubscription(null);
+        logger.log('User is unsubscribed.');
+        this.setState({ notifications: false });
+      });
   },
   render() {
     const { submitChoosenTalks, goToResults, ...slots } = this.props;
     const checkAlreadyVote = this.props.route.checkVote !== undefined ? this.props.route.checkVote : true;
+    const state = this.state || { notifications: false };
     const AppRightButtons = (
       <div style={{ display: 'inline-flex' }}>
         <Notification style={{ color: '#fff', height: '36px', width: '36px' }} />
-        <Toggle style={{ marginTop: '8px' }} onToggle={() => this.onToggle()} />
+        <Toggle style={{ marginTop: '8px' }} toggled={state.notifications} onToggle={event => this.onToggle(event)} />
       </div>
     );
     return (

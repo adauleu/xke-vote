@@ -73,6 +73,7 @@ module.exports = (options) => ({
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+        VOTE_PUBLIC_KEY: JSON.stringify(process.env.VOTE_PUBLIC_KEY),
       },
       __BASENAME__: process.env.BASENAME || '',
     }),
