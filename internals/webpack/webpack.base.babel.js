@@ -5,6 +5,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = (options) => ({
   entry: options.entry,
@@ -81,6 +82,11 @@ module.exports = (options) => ({
     new ServiceWorkerWebpackPlugin({
       entry: path.join(process.cwd(), 'app/sw.js'),
     }),
+    new CopyWebpackPlugin([
+      {
+        from: path.join(process.cwd(), 'app/manifest.json'),
+        to: path.resolve(process.cwd(), 'build'),
+      }]),
   ]),
   resolve: {
     modules: ['app', 'node_modules'],

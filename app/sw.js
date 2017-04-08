@@ -1,5 +1,4 @@
-const SLOW_TIME = 3000;
-const CACHE = `xke-vote::1`;
+const CACHE = `xke-vote::${Date.now()}`;
 const logger = console;
 
 console.log('Files to cache :', global.serviceWorkerOption.assets);
@@ -56,49 +55,46 @@ self.addEventListener('fetch', (event) => {
 
   const url = event.request.url;
 
-  if (url.includes('/api/store') || url.includes('session-start')) {
-    event.respondWith(
-      caches.open(CACHE)
-        .then((cache) => cache.match(event.request)
-          .then((response) => {
-            // make network request
-            return fetch(event.request)
-              .then((newreq) => {
-                console.log(`network fetch: ${url}`);
-                if (newreq.ok) cache.put(event.request, newreq.clone());
-                return newreq;
-              }).catch(() => {
-                return response;
-              });
-          }))
-    );
-  } else {
-    event.respondWith(
-      caches.open(CACHE)
-        .then((cache) => cache.match(event.request)
-          .then((response) => {
-            if (response) {
-              // return cached file
-              console.log(`cache fetch: ${url}`);
-              return response;
-            }
+    if (url.includes('api/')) {
+        event.respondWith(
+            caches.open(CACHE)
+                .then((cache) => cache.match(event.request)
+                    .then((response) =>
+                        // make network request
+                         fetch(event.request)
+                            .then((newreq) => {
+                                console.log(`network fetch: ${url}`);
+                                if (newreq.ok) cache.put(event.request, newreq.clone());
+                                return newreq;
+                            }).catch(() =>  response)))
+        );
+    } else {
+        event.respondWith(
+            caches.open(CACHE)
+                .then((cache) => cache.match(event.request)
+                    .then((response) => {
+                        if (response) {
+                            // return cached file
+                            console.log(`cache fetch: ${url}`);
+                            return response;
+                        }
 
-            // make network request
-            return fetch(event.request)
-              .then((newreq) => {
-                console.log(`network fetch: ${url}`);
-                if (newreq.ok) cache.put(event.request, newreq.clone());
-                return newreq;
-              }).catch(() => {
-                // User is landing on our page.
-                if (event.request.mode === 'navigate') {
-                  return global.caches.match('./');
-                }
+                        // make network request
+                      return fetch(event.request)
+                            .then((newreq) => {
+                              console.log(`network fetch: ${url}`);
+                              if (newreq.ok) cache.put(event.request, newreq.clone());
+                              return newreq;
+                            }).catch(() => {
+                                // User is landing on our page.
+                              if (event.request.mode === 'navigate') {
+                                return global.caches.match('./');
+                              }
 
-                return null;
-              });
-          }))
-    );
+                              return null;
+                            });
+                    }))
+        );
   }
 });
 
