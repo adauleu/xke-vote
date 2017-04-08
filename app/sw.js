@@ -112,19 +112,16 @@ self.addEventListener('push', event => {
     const title = 'Vote XKE';
     const options = {
       body: data,
-      // icon: 'images/icon.png',
-      // icon: require('assets/notification.png'),
-      icon: '',
-      // badge: 'images/badge.png',
+      icon: require('static/icon-192x192.png'),
+      badge: require('static/icon-72x72.png'),
     };
     event.waitUntil(self.registration.showNotification(title, options));
   } catch (err) {
     const title = 'Vote XKE';
     const options = {
       body: event.data.text(),
-      // icon: 'images/icon.png',
-      // icon: require('assets/notification.png'),
-      // badge: 'images/badge.png',
+      icon: require('static/icon-192x192.png'),
+      badge: require('static/icon-72x72.png'),
     };
     event.waitUntil(self.registration.showNotification(title, options));
   }
@@ -133,6 +130,6 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   logger.log('[Service Worker] Notification click Received.');
   event.notification.close();
-  event.waitUntil(clients.openWindow('http://localhost:3000'));
+  event.waitUntil(clients.openWindow('https://xke-vote-pwa.aws.xebiatechevent.info'));
 });
 

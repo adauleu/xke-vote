@@ -10,6 +10,15 @@ import routes from './routes';
 import configureStore from './utils/configureStore';
 import { updateVotes } from './actions/slotsActions';
 
+import '!file-loader?name=[name].[ext]!./static/icon-72x72.png';
+import '!file-loader?name=[name].[ext]!./static/icon-96x96.png';
+import '!file-loader?name=[name].[ext]!./static/icon-128x128.png';
+import '!file-loader?name=[name].[ext]!./static/icon-144x144.png';
+import '!file-loader?name=[name].[ext]!./static/icon-152x152.png';
+import '!file-loader?name=[name].[ext]!./static/icon-192x192.png';
+import '!file-loader?name=[name].[ext]!./static/icon-384x384.png';
+import '!file-loader?name=[name].[ext]!./static/icon-512x512.png';
+
 injectTapEventPlugin();
 
 const initialState = {};

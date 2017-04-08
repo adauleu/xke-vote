@@ -97,6 +97,7 @@ if (isDev) {
   const server = https.createServer(opt, app);
   io = socketIo.listen(server);
   server.listen(httpsPort);
+  logger.appStarted(port, prettyHost);
 }
 
 io.on('connection', (socket) => {
@@ -131,6 +132,9 @@ io.on('connection', (socket) => {
         });
         console.log('TERMINATE_SESSION by ' + socket.id);
         io.emit('updateSession', store.getState());
+        Object.keys(subscriptions).forEach(key => {
+          webpush.sendNotification(subscriptions[key], 'Les résultats sont disponibles')
+        });
         break;
 
       case 'SUBMIT_NOTIFICATION_SUBSCRIPTION': {
