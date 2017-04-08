@@ -70,17 +70,10 @@ export const ChooseSlots = React.createClass({
     voters: PropTypes.array.isRequired,
     route: PropTypes.object.isRequired,
   },
-  componentDidMount() {
-    const { getServerStore } = this.props;
-    getServerStore()
-      .then(() => {
-        const checkAlreadyVote = this.props.route.checkVote !== undefined ? this.props.route.checkVote : true;
-        const alreadyVote = _(this.props.voters).find((voter) => voter === getClientId()) !== undefined;
-        if ((checkAlreadyVote && alreadyVote)) {
-          const { goToResults } = this.props;
-          goToResults();
-        }
-      });
+  getInitialState() {
+    return { notifications: false };
+  },
+  componentWillMount() {
     navigator.serviceWorker.ready.then(swRegistration => {
       this.setState({ swRegistration });
       swRegistration.pushManager.getSubscription()
@@ -105,11 +98,21 @@ export const ChooseSlots = React.createClass({
         });
     });
   },
-  onToggle(event) {
-    event.preventDefault();
-    const value = event.target.value === 'on';
-    this.setState({ notifications: value });
-    if (value) {
+  componentDidMount() {
+    const { getServerStore } = this.props;
+    getServerStore()
+      .then(() => {
+        const checkAlreadyVote = this.props.route.checkVote !== undefined ? this.props.route.checkVote : true;
+        const alreadyVote = _(this.props.voters).find((voter) => voter === getClientId()) !== undefined;
+        if ((checkAlreadyVote && alreadyVote)) {
+          const { goToResults } = this.props;
+          goToResults();
+        }
+      });
+  },
+  onToggle(isInputChecked) {
+    this.setState({ notifications: isInputChecked });
+    if (isInputChecked) {
       this.subscribeUser();
     } else {
       this.unsubscribeUser();
@@ -149,11 +152,14 @@ export const ChooseSlots = React.createClass({
   render() {
     const { submitChoosenTalks, goToResults, ...slots } = this.props;
     const checkAlreadyVote = this.props.route.checkVote !== undefined ? this.props.route.checkVote : true;
-    const state = this.state || { notifications: false };
     const AppRightButtons = (
       <div style={{ display: 'inline-flex' }}>
         <Notification style={{ color: '#fff', height: '36px', width: '36px' }} />
-        <Toggle style={{ marginTop: '8px' }} toggled={state.notifications} onToggle={event => this.onToggle(event)} />
+        <Toggle
+          style={{ marginTop: '8px' }}
+          defaultToggled={!!this.state.notifications}
+          onToggle={(event, isInputChecked) => this.onToggle(isInputChecked)}
+        />
       </div>
     );
     return (
