@@ -1,7 +1,7 @@
 const CACHE = `xke-vote::${Date.now()}`;
 const logger = console;
 
-console.log('Files to cache :', global.serviceWorkerOption.assets);
+logger.log('Files to cache :', global.serviceWorkerOption.assets);
 const {
   assets,
 } = global.serviceWorkerOption;
@@ -15,7 +15,7 @@ function installStaticFiles() {
 }
 
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installed service worker');
+  logger.log('[SW] Installed service worker');
 
   // cache core files
   event.waitUntil(
@@ -36,7 +36,7 @@ function clearOldCaches() {
 
 // After the install event.
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activate event');
+  logger.log('[SW] Activate event');
 
   // delete old caches
   event.waitUntil(
@@ -46,43 +46,41 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('update', (event) => {
-  console.log('[SW] Update event');
+  logger.log('[SW] Update event');
 });
 
 // application fetch network data
 self.addEventListener('fetch', (event) => {
-  // abandon non-GET requests
-
   const url = event.request.url;
 
-    if (url.includes('api/')) {
-        event.respondWith(
+  if (url.includes('api/')) {
+    event.respondWith(
             caches.open(CACHE)
                 .then((cache) => cache.match(event.request)
                     .then((response) =>
                         // make network request
                          fetch(event.request)
                             .then((newreq) => {
-                                console.log(`network fetch: ${url}`);
-                                if (newreq.ok) cache.put(event.request, newreq.clone());
-                                return newreq;
-                            }).catch(() =>  response)))
+                              logger.log(`network fetch: ${url}`);
+                              if (newreq.ok) cache.put(event.request, newreq.clone());
+                              return newreq;
+                            }).catch(() => response)))
         );
-    } else {
-        event.respondWith(
+  } else {
+    event.respondWith(
             caches.open(CACHE)
                 .then((cache) => cache.match(event.request)
                     .then((response) => {
-                        if (response) {
+                      if (response) {
                             // return cached file
-                            console.log(`cache fetch: ${url}`);
-                            return response;
-                        }
+                        logger.log(`cache fetch: ${url}`);
+                        return response;
+                      }
 
-                        // make network request
+                      // make network request
                       return fetch(event.request)
                             .then((newreq) => {
-                              console.log(`network fetch: ${url}`);
+                              logger.log(`network fetch: ${url}`);
                               if (newreq.ok) cache.put(event.request, newreq.clone());
                               return newreq;
                             }).catch(() => {
@@ -102,7 +100,7 @@ self.addEventListener('fetch', (event) => {
  * Notifications
  */
 
-self.addEventListener('push', event => {
+self.addEventListener('push', (event) => {
   logger.log('[Service Worker] Push Received.');
   logger.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
 
@@ -127,7 +125,7 @@ self.addEventListener('push', event => {
   }
 });
 
-self.addEventListener('notificationclick', event => {
+self.addEventListener('notificationclick', (event) => {
   logger.log('[Service Worker] Notification click Received.');
   event.notification.close();
   event.waitUntil(clients.openWindow('https://xke-vote-pwa.aws.xebiatechevent.info'));
