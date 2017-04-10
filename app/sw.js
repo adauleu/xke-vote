@@ -102,6 +102,8 @@ self.addEventListener('fetch', (event) => {
  * Notifications
  */
 
+
+
 self.addEventListener('push', event => {
   logger.log('[Service Worker] Push Received.');
   logger.log(`[Service Worker] Push had this data: "${event.data.text()}"`);
@@ -112,16 +114,16 @@ self.addEventListener('push', event => {
     const title = 'Vote XKE';
     const options = {
       body: data,
-      icon: require('static/icon-192x192.png'),
-      badge: require('static/icon-72x72.png'),
+      icon: 'icon-192x192.png',
+      badge: 'static/icon-72x72.png',
     };
     event.waitUntil(self.registration.showNotification(title, options));
   } catch (err) {
     const title = 'Vote XKE';
     const options = {
       body: event.data.text(),
-      icon: require('static/icon-192x192.png'),
-      badge: require('static/icon-72x72.png'),
+      icon: 'icon-192x192.png',
+      badge: 'icon-72x72.png',
     };
     event.waitUntil(self.registration.showNotification(title, options));
   }
